@@ -55,7 +55,7 @@ defmodule DomainCounter do
       # Сначала проверим все ссылки на корректность
       # А уже потом будем грузить в базу
       # Чтобы избежать частичных загрузок
-      links |> Enum.map(&get_domain/1) |> Enum.map(&upload_link(&1, current_time))
+      links |> Enum.map(&get_domain/1) |> Enum.uniq |> Enum.map(&upload_link(&1, current_time))
       {200, "ok"}
     rescue
       e in ArgumentError -> {400, e.message}

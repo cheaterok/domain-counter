@@ -3,7 +3,6 @@ defmodule DomainCounterTest do
   use Plug.Test
   doctest DomainCounter
 
-  # alias A
   import Mock
 
   @opts DomainCounter.init([])
@@ -40,6 +39,7 @@ defmodule DomainCounterTest do
 
   test "add domains" do
     links = [
+      "https://ya.ru",
       "https://ya.ru?q=123",
       "funbox.ru",
       "https://stackoverflow.com/questions/11828270/how-to-exit-the-vim-editor"
