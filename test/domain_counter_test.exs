@@ -70,6 +70,39 @@ defmodule DomainCounterTest do
     assert Poison.decode!(conn.resp_body) == %{"status" => "Bad URL "}
   end
 
+  test "add domain [wrong type]" do
+    conn = 
+      :post
+      |> conn("/visited_links", Poison.encode!(%{"links" => 1234}))
+      |> DomainCounter.call(@opts)
+    
+    assert conn.state == :sent
+    assert conn.status == 400
+    assert Poison.decode!(conn.resp_body) == %{"status" => "'links' should be list"}
+  end
+
+  test "add domain [wrong types]" do
+    conn = 
+      :post
+      |> conn("/visited_links", Poison.encode!(%{"links" => [1, "45", 13.0, ["test"]]}))
+      |> DomainCounter.call(@opts)
+    
+    assert conn.state == :sent
+    assert conn.status == 400
+    assert Poison.decode!(conn.resp_body) == %{"status" => "'links' members should be strings"}
+  end
+
+  test "add domain [no links]" do
+    conn = 
+      :post
+      |> conn("/visited_links", Poison.encode!(%{"random" => 1234}))
+      |> DomainCounter.call(@opts)
+    
+    assert conn.state == :sent
+    assert conn.status == 400
+    assert Poison.decode!(conn.resp_body) == %{"status" => "Bad arguments"}
+  end
+
   test "get domains" do
     {from, to} = {12345, 54321}
     conn = 

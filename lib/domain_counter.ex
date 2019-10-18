@@ -48,16 +48,23 @@ defmodule DomainCounter do
 
   post "/visited_links" do
     current_time = DateTime.utc_now |> DateTime.to_unix
-    {:ok, links_json, _} = Plug.Conn.read_body(conn)
-    %{"links" => links} = Poison.decode!(links_json)
 
     {status_code, status_msg} = try do
+      {:ok, links_json, _} = Plug.Conn.read_body(conn)
+      %{"links" => links} = Poison.decode!(links_json)
+
+      if not Enum.all?(links, &is_bitstring/1) do
+        raise ArgumentError, message: "'links' members should be strings"
+      end
+
       # Сначала проверим все ссылки на корректность
       # А уже потом будем грузить в базу
       # Чтобы избежать частичных загрузок
       links |> Enum.map(&get_domain/1) |> Enum.uniq |> Enum.map(&upload_link(&1, current_time))
       {200, "ok"}
     rescue
+      MatchError -> {400, "Bad arguments"}
+      Protocol.UndefinedError -> {400, "'links' should be list"}
       e in ArgumentError -> {400, e.message}
     end
     
